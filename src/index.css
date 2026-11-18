@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+table {
+    border-collapse: collapse;
+    padding: 10px;
+    box-shadow: 0 0px 10px gainsboro;
+}
+
+th,
+td {
+    border: 2px solid grey;
+    padding: 5px;
+}
+
+form{
+    padding: 20px;
+    box-shadow: 0 0px 10px gainsboro;
+    margin: 10px;
+    border-radius: 10px;
+}
+
+*{
+    margin: auto;
+}
