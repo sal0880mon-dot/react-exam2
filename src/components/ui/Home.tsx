@@ -1,5 +1,7 @@
+import Crud from "./Crud"
+
 function Home() {
-    return <h1>Home Page</h1>
+    return <Crud/>
 }
 
 export default Home
