@@ -1,11 +1,9 @@
-// import { useForm } from 'react-hook-form'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
