@@ -1,6 +1,6 @@
 
 
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useFormik } from 'formik'
 import axios from 'axios';
 
@@ -19,16 +19,16 @@ const AsyncCrudWithFormik = () => {
 
     async function getData() {
         try {
-            const {data}=await axios.get<Person[]>(api)
+            const { data } = await axios.get<Person[]>(api)
             setData(data)
         } catch (error) {
             console.error(error);
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         getData()
-    },[])
+    }, [])
 
     async function deleteData(id: string) {
         try {
@@ -39,7 +39,7 @@ const AsyncCrudWithFormik = () => {
         }
     }
 
-    
+
 
     const { values, handleChange, handleSubmit, setValues, resetForm } = useFormik({
         initialValues: {
@@ -50,7 +50,7 @@ const AsyncCrudWithFormik = () => {
         onSubmit: async values => {
             if (editId === null) {
                 try {
-                    await axios.post<Person[]>(api,values)
+                    await axios.post<Person[]>(api, values)
                     getData()
                     resetForm()
                 } catch (error) {
@@ -59,7 +59,7 @@ const AsyncCrudWithFormik = () => {
                 setData(prev => [...prev, { ...values, id: String(Date.now()) }])
             } else {
                 try {
-                    await axios.put(`${api}/${editId}`,values)
+                    await axios.put(`${api}/${editId}`, values)
                     getData()
                     setEditId(null)
                     resetForm()

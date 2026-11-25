@@ -1,27 +1,37 @@
-import { useForm } from 'react-hook-form'
+// import { useForm } from 'react-hook-form'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "./table"
 
-type FormValues = {
-    firstName: string
-    lastName: string
-    email: string
+type Person = {
+    id: number
+    name: string
+    description: string
+    isCompleted: boolean
+    images: { imageName: string }[]
 }
-
-type Person = FormValues & { id: string }
 
 function About() {
 
-    const api = 'https://6ace4295f338359cf1c358b1.mockapi.io/1234'
+    const api = 'https://to-dos-api.softclub.tj/api/to-dos'
+    const imageApi = 'https://to-dos-api.softclub.tj/images/'
 
     const [data, setData] = useState<Person[]>([])
-    const [editId, setEditId] = useState<string | null>(null)
+    // const [editId, setEditId] = useState<string | null>(null)
 
     async function getData() {
         try {
-            const { data } = await axios.get<Person[]>(api)
-            setData(data)
+            const { data } = await axios.get(api)
+            setData(data.data)
         } catch (error) {
             console.error(error);
         }
@@ -31,65 +41,48 @@ function About() {
         getData()
     }, [])
 
-    const { register, handleSubmit, reset, setValue } = useForm<FormValues>({
-        defaultValues: {
-            firstName: '',
-            lastName: '',
-            email: '',
-        },
-    })
-    
-    const editData = (el: Person) => {
-        setEditId(el.id)
-        setValue('firstName', el.firstName)
-        setValue('lastName', el.lastName)
-        setValue('email', el.email)
-    }
-    const onSubmit = async (values: FormValues) => {
+    async function deleteData(id: number) {
         try {
-            if (editId === null) {
-                await axios.post(api, values)
-            } else {
-                await axios.put(`${api}/${editId}`, values)
-                setEditId(null)
-            }
-            getData()
-            reset()
-        } catch (error) {
-            console.error(error)
-        }
-    }
-
-    async function deleteData(id: string) {
-        try {
-            await axios.delete(`${api}/${id}`)
+            await axios.delete(api, { params: { id } })
             getData()
         } catch (error) {
             console.error(error);
         }
     }
+
     return (
         <>
-            <h1>Todo List With React Hook Form</h1>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <input {...register('firstName')} type="text" />
-                <input {...register('lastName')} type="text" />
-                <input {...register('email')} type="text" />
-                <button type="submit">{editId === null ? 'submit' : 'save'}</button>
-            </form>
-            <div>
-                {
-                    data.map(el => {
-                        return <div key={el.id}>
-                            <h1>{el.firstName}</h1>
-                            <h1>{el.lastName}</h1>
-                            <h1>{el.email}</h1>
-                            <button onClick={() => deleteData(el.id)}>delete</button>
-                            <button onClick={() => editData(el)}>edit</button>
-                        </div>
-                    })
-                }
-            </div>
+            <h1>Todo List</h1>
+
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Images</TableHead>
+                        <TableHead>action</TableHead>
+                    </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                    {data.map(el => (
+                        <TableRow key={el.id}>
+                            <TableCell>{el.name}</TableCell>
+                            <TableCell>{el.description}</TableCell>
+                            <TableCell>{el.isCompleted ? 'active' : 'inactive'}</TableCell>
+                            <TableCell>
+                                {el.images?.map(img => (
+                                    <img src={imageApi + img.imageName} width={90} />
+                                ))}
+                            </TableCell>
+                            <TableCell>
+                                <button onClick={() => deleteData(el.id)}>delete</button>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
         </>
     )
 }

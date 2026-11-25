@@ -1,76 +1,149 @@
 
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "./table"
 
-import { useState } from 'react';
-import { useFormik } from 'formik'
+type Person = {
+    id: number
+    name: string
+    description: string
+    isCompleted: boolean
+    images: { imageName: string }[]
+}
 
 function Crud() {
-    type Person = {
-        id: number
-        firstName: string
-        lastName: string
-        email: string
-    }
+    const api = 'https://to-dos-api.softclub.tj/api/to-dos'
+    const imageApi = 'https://to-dos-api.softclub.tj/images/'
 
     const [data, setData] = useState<Person[]>([])
     const [editId, setEditId] = useState<number | null>(null)
+    const [name, setName] = useState('')
+    const [description, setDescription] = useState('')
 
-
-    const deleteData = (id: number) => {
-        setData(prev => prev.filter(el => el.id !== id))
+    async function getData() {
+        try {
+            const { data } = await axios.get(api)
+            setData(data.data)
+        } catch (error) {
+            console.error(error)
+        }
     }
 
-    const { values, handleChange, handleSubmit, setValues, resetForm } = useFormik({
-        initialValues: {
-            firstName: '',
-            lastName: '',
-            email: '',
-        },
-        onSubmit: values => {
-            if (editId === null) {
-                setData(prev => [...prev, { ...values, id: Date.now() }])
-            } else {
-                setData(prev => prev.map(el => el.id === editId ? { ...el, ...values } : el))
-                setEditId(null)
-            }
-            resetForm()
-        },
-    });
+    useEffect(() => {
+        getData()
+    }, [])
 
-    const editData = (el: Person) => {
-        setEditId(el.id)
-        setValues(
-            {
-                firstName: el.firstName,
-                lastName: el.lastName,
-                email: el.email
+    async function addData() {
+        try {
+            await axios.post(api, {
+                name,
+                description
             })
+            setName('')
+            setDescription('')
+            getData()
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    function editData(el: Person) {
+        setEditId(el.id)
+        setName(el.name)
+        setDescription(el.description)
+    }
+
+    async function saveData() {
+        try {
+            await axios.put(api, {
+                id: editId,
+                name,
+                description
+            })
+            setEditId(null)
+            setName('')
+            setDescription('')
+            getData()
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    async function deleteData(id: number) {
+        try {
+            await axios.delete(api, { params: { id } })
+            getData()
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     return (
         <>
-        <h1>Todo List With Formik</h1>
-            <form onSubmit={handleSubmit}>
-                <input onChange={handleChange} value={values.firstName} name='firstName' type="text" />
-                <input onChange={handleChange} value={values.lastName} name='lastName' type="text" />
-                <input onChange={handleChange} value={values.email} name='email' type="text" />
-                <button type="submit">{editId === null ? 'submit' : 'save'}</button>
-            </form>
-            <div>
-                {
-                    data.map(el => {
-                        return <div key={el.id}>
-                            <h1>{el.firstName}</h1>
-                            <h1>{el.lastName}</h1>
-                            <h1>{el.email}</h1>
-                            <button onClick={() => editData(el)}>edit</button>
-                            <button onClick={() => deleteData(el.id)}>delete</button>
-                        </div>
-                    })
-                }
-            </div>
-        </>
+            <h1>Todo List</h1>
 
+            <input
+                placeholder="Name"
+                value={name}
+                onChange={e => setName(e.target.value)}
+            />
+
+            <input
+                placeholder="Description"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+            />
+
+            <button onClick={editId === null ? addData : saveData}>
+                {editId === null ? 'Add' : 'Save'}
+            </button>
+
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Images</TableHead>
+                        <TableHead>Action</TableHead>
+                    </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                    {data.map(el => (
+                        <TableRow key={el.id}>
+                            <TableCell>{el.name}</TableCell>
+                            <TableCell>{el.description}</TableCell>
+                            <TableCell>
+                                {el.isCompleted ? 'active' : 'inactive'}
+                            </TableCell>
+                            <TableCell>
+                                {el.images?.map(img => (
+                                    <img
+                                        key={img.imageName}
+                                        src={imageApi + img.imageName}
+                                        width={90}
+                                        alt=""
+                                    />
+                                ))}
+                            </TableCell>
+                            <TableCell>
+                                <button onClick={() => editData(el)}>Edit</button>
+                                <button onClick={() => deleteData(el.id)}>Delete</button>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </>
     )
 }
 
