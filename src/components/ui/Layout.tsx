@@ -5,7 +5,6 @@ function Layout() {
         <>
             <Link to="/">Home</Link>
             <Link to="/home">info</Link>
-            {/* <Link to="/acyns-crud-with-formik">todo</Link> */}
             <Outlet />
         </>
     )

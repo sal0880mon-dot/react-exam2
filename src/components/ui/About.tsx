@@ -26,7 +26,6 @@ function About() {
     const imageApi = 'https://to-dos-api.softclub.tj/images/'
 
     const [data, setData] = useState<Person[]>([])
-    // const [editId, setEditId] = useState<string | null>(null)
 
     async function getData() {
         try {
