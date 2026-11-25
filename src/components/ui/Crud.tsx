@@ -16,11 +16,11 @@ function Crud() {
     const [editId, setEditId] = useState<number | null>(null)
 
 
-    const deleteData = (id: Number) => {
+    const deleteData = (id: number) => {
         setData(prev => prev.filter(el => el.id !== id))
     }
 
-    const { values, handleChange, handleSubmit, setValues, resetForm  } = useFormik({
+    const { values, handleChange, handleSubmit, setValues, resetForm } = useFormik({
         initialValues: {
             firstName: '',
             lastName: '',
@@ -33,16 +33,23 @@ function Crud() {
                 setData(prev => prev.map(el => el.id === editId ? { ...el, ...values } : el))
                 setEditId(null)
             }
-            resetForm ()
+            resetForm()
         },
     });
 
     const editData = (el: Person) => {
         setEditId(el.id)
-        setValues({ firstName: el.firstName, lastName: el.lastName, email: el.email })
+        setValues(
+            {
+                firstName: el.firstName,
+                lastName: el.lastName,
+                email: el.email
+            })
     }
+
     return (
         <>
+        <h1>Todo List With Formik</h1>
             <form onSubmit={handleSubmit}>
                 <input onChange={handleChange} value={values.firstName} name='firstName' type="text" />
                 <input onChange={handleChange} value={values.lastName} name='lastName' type="text" />
