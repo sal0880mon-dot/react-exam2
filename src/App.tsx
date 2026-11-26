@@ -1,10 +1,10 @@
-// import { createBrowserRouter, RouterProvider } from 'react-router'
-import Home from './components/ui/Home'
-import About from './components/ui/About'
 
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import Layout from './components/ui/Layout'
+import { lazy, Suspense } from 'react'
 
+const Home=lazy(()=> import('./components/ui/Home'))
+const About=lazy(()=> import('./components/ui/About'))
 
 const router = createBrowserRouter([
     {
@@ -24,7 +24,11 @@ const router = createBrowserRouter([
 ])
 
 function App() {
-    return <RouterProvider router={router} />
+    return (
+        <Suspense fallback={<h1>Loading...</h1>}>
+            <RouterProvider router={router} />
+        </Suspense>
+    )
 }
 
 export default App

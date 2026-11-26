@@ -1,6 +1,9 @@
 
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 import {
     Table,
@@ -19,92 +22,73 @@ type Person = {
     images: { imageName: string }[]
 }
 
+const schema = z.object({
+    name: z.string().min(3, 'minimum 3 leters'),
+    description: z.string().min(3, 'minimum 3 leters')
+})
+
+type FormValues = z.infer<typeof schema>
+
 function Crud() {
     const api = 'https://to-dos-api.softclub.tj/api/to-dos'
     const imageApi = 'https://to-dos-api.softclub.tj/images/'
 
     const [data, setData] = useState<Person[]>([])
     const [editId, setEditId] = useState<number | null>(null)
-    const [name, setName] = useState('')
-    const [description, setDescription] = useState('')
+
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+        resolver: zodResolver(schema)
+    })
 
     async function getData() {
-        try {
-            const { data } = await axios.get(api)
-            setData(data.data)
-        } catch (error) {
-            console.error(error)
-        }
+        const { data } = await axios.get(api)
+        setData(data.data)
     }
 
     useEffect(() => {
         getData()
     }, [])
 
-    async function addData() {
-        try {
-            await axios.post(api, {
-                name,
-                description
-            })
-            setName('')
-            setDescription('')
-            getData()
-        } catch (error) {
-            console.error(error)
+    async function onSubmit(values: FormValues) {
+        if (editId === null) {
+            await axios.post(api, values)
+        } else {
+            await axios.put(api, { id: editId, ...values })
+            setEditId(null)
         }
+
+        reset()
+        getData()
     }
 
     function editData(el: Person) {
         setEditId(el.id)
-        setName(el.name)
-        setDescription(el.description)
-    }
-
-    async function saveData() {
-        try {
-            await axios.put(api, {
-                id: editId,
-                name,
-                description
-            })
-            setEditId(null)
-            setName('')
-            setDescription('')
-            getData()
-        } catch (error) {
-            console.error(error)
-        }
+        reset({
+            name: el.name,
+            description: el.description
+        })
     }
 
     async function deleteData(id: number) {
-        try {
-            await axios.delete(api, { params: { id } })
-            getData()
-        } catch (error) {
-            console.error(error)
-        }
+        await axios.delete(api, { params: { id } })
+        getData()
     }
 
     return (
         <>
             <h1>Todo List</h1>
 
-            <input
-                placeholder="Name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-            />
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <input placeholder="Name" {...register('name')} />
+                <p>{errors.name?.message}</p>
 
-            <input
-                placeholder="Description"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-            />
+                <input placeholder="Description" {...register('description')} />
+                <p>{errors.description?.message}</p>
 
-            <button onClick={editId === null ? addData : saveData}>
-                {editId === null ? 'Add' : 'Save'}
-            </button>
+                <button type="submit">
+                    {editId === null ? 'Add' : 'Save'}
+                </button>
+            </form>
 
             <Table>
                 <TableHeader>
@@ -122,9 +106,8 @@ function Crud() {
                         <TableRow key={el.id}>
                             <TableCell>{el.name}</TableCell>
                             <TableCell>{el.description}</TableCell>
-                            <TableCell>
-                                {el.isCompleted ? 'active' : 'inactive'}
-                            </TableCell>
+                            <TableCell>{el.isCompleted ? 'active' : 'inactive'}</TableCell>
+
                             <TableCell>
                                 {el.images?.map(img => (
                                     <img
@@ -135,6 +118,7 @@ function Crud() {
                                     />
                                 ))}
                             </TableCell>
+
                             <TableCell>
                                 <button onClick={() => editData(el)}>Edit</button>
                                 <button onClick={() => deleteData(el.id)}>Delete</button>
