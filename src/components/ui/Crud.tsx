@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -13,6 +13,8 @@ import {
     TableHeader,
     TableRow,
 } from "./table"
+
+import { ThemeContext } from './ThemeContext'
 
 type Person = {
     id: number
@@ -32,6 +34,8 @@ type FormValues = z.infer<typeof schema>
 function Crud() {
     const api = 'https://to-dos-api.softclub.tj/api/to-dos'
     const imageApi = 'https://to-dos-api.softclub.tj/images/'
+
+    const {theme,toggleTheme}=useContext(ThemeContext)
 
     const [data, setData] = useState<Person[]>([])
     const [editId, setEditId] = useState<number | null>(null)
@@ -56,7 +60,6 @@ function Crud() {
             await axios.put(api, { id: editId, ...values })
             setEditId(null)
         }
-
         reset()
         getData()
     }
@@ -75,8 +78,11 @@ function Crud() {
     }
 
     return (
-        <>
+        <div className={`${theme === 'light' ? 'bg-white text-black' : 'bg-gray-900 text-white'} min-h-[300px] p-8`}>
             <h1>Todo List</h1>
+            <button onClick={toggleTheme} >
+                {theme=='light'?'Dark':'Light'}
+            </button>
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 <input placeholder="Name" {...register('name')} />
@@ -118,7 +124,7 @@ function Crud() {
                                     />
                                 ))}
                             </TableCell>
-
+                            
                             <TableCell>
                                 <button onClick={() => editData(el)}>Edit</button>
                                 <button onClick={() => deleteData(el.id)}>Delete</button>
@@ -127,7 +133,7 @@ function Crud() {
                     ))}
                 </TableBody>
             </Table>
-        </>
+        </div>
     )
 }
 

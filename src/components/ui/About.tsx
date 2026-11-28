@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+
+import { useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 
 import {
@@ -10,6 +11,8 @@ import {
     TableRow,
 } from "./table"
 
+import { ThemeContext } from './ThemeContext'
+
 type Person = {
     id: number
     name: string
@@ -19,6 +22,7 @@ type Person = {
 }
 
 function About() {
+    const { theme, toggleTheme } = useContext(ThemeContext)
 
     const api = 'https://to-dos-api.softclub.tj/api/to-dos'
     const imageApi = 'https://to-dos-api.softclub.tj/images/'
@@ -30,7 +34,7 @@ function About() {
             const { data } = await axios.get(api)
             setData(data.data)
         } catch (error) {
-            console.error(error);
+            console.error(error)
         }
     }
 
@@ -43,13 +47,20 @@ function About() {
             await axios.delete(api, { params: { id } })
             getData()
         } catch (error) {
-            console.error(error);
+            console.error(error)
         }
     }
 
     return (
-        <>
+        <div className={`${theme === 'light' ? 'bg-white text-black' : 'bg-gray-900 text-white'} min-h-[300px] p-8`}>
             <h1>Todo List</h1>
+            <h1>Текущая тема: {theme}</h1>
+
+            <button
+                onClick={toggleTheme}
+            >
+                {theme === 'light' ? 'Dark' : 'Light'}
+            </button>
 
             <Table>
                 <TableHeader>
@@ -67,20 +78,28 @@ function About() {
                         <TableRow key={el.id}>
                             <TableCell>{el.name}</TableCell>
                             <TableCell>{el.description}</TableCell>
-                            <TableCell>{el.isCompleted ? 'active' : 'inactive'}</TableCell>
+                            <TableCell>
+                                {el.isCompleted ? 'active' : 'inactive'}
+                            </TableCell>
                             <TableCell>
                                 {el.images?.map(img => (
-                                    <img src={imageApi + img.imageName} width={90} />
+                                    <img
+                                        key={img.imageName}
+                                        src={imageApi + img.imageName}
+                                        width={90}
+                                    />
                                 ))}
                             </TableCell>
                             <TableCell>
-                                <button onClick={() => deleteData(el.id)}>delete</button>
+                                <button onClick={() => deleteData(el.id)}>
+                                    delete
+                                </button>
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
-        </>
+        </div>
     )
 }
 
